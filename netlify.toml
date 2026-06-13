@@ -1,0 +1,18 @@
+[build]
+  publish = "public"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# API 路由重定向
+[[redirects]]
+  from = "/api/assess"
+  to = "/.netlify/functions/assess"
+  status = 200
+
+# 前端路由支持 SPA
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
