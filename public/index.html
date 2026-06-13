@@ -765,6 +765,9 @@ async function performAutoAssessment(name) {
     updateProgress();
     renderCheckItems();
 
+    // 显示搜索流程面板
+    renderSearchLog(data.searchLog, data.dataSource);
+
     // 显示自动抓取结果提示
     const riskCount = data.checkedCount || 0;
     const hintColor = riskCount > 5 ? '#D32F2F' : riskCount > 2 ? '#FF9800' : '#2E7D32';
@@ -787,6 +790,112 @@ async function performAutoAssessment(name) {
     if (existing) existing.remove();
     showAutoHint('⚠️ 网络请求失败，请手动勾选风险项。', '#D32F2F');
   }
+}
+
+function renderSearchLog(searchLog, finalSource) {
+  if (!searchLog || searchLog.length === 0) return;
+
+  const checkContent = document.getElementById('checkContent');
+
+  // 构建搜索流程 HTML
+  let logHtml = '<div style="font-size:12px;color:#666;">';
+
+  searchLog.forEach((log, idx) => {
+    const icon = getStepIcon(log.status);
+    const color = getStepColor(log.status);
+    let detail = '';
+
+    if (log.query) {
+      detail += `<div style="margin:2px 0 2px 18px;color:#888;font-size:11px;">查询词：${escapeHtml(log.query)}</div>`;
+    }
+    if (log.resultCount !== undefined) {
+      detail += `<div style="margin:2px 0 2px 18px;color:#888;font-size:11px;">返回结果：${log.resultCount} 条</div>`;
+    }
+    if (log.textLength !== undefined) {
+      detail += `<div style="margin:2px 0 2px 18px;color:#888;font-size:11px;">提取文本：${log.textLength} 字符</div>`;
+    }
+    if (log.matches && log.matches.length > 0) {
+      detail += `<div style="margin:2px 0 2px 18px;color:#888;font-size:11px;">匹配到的风险关键词：</div>`;
+      detail += '<div style="margin:2px 0 4px 18px;display:flex;flex-wrap:wrap;gap:4px;">';
+      log.matches.forEach(m => {
+        detail += `<span style="background:#FFF3E0;color:#E65100;padding:1px 6px;border-radius:3px;font-size:10px;">${escapeHtml(m.keyword)} → ${escapeHtml(m.desc)}</span>`;
+      });
+      detail += '</div>';
+    }
+    if (log.error) {
+      detail += `<div style="margin:2px 0 2px 18px;color:#D32F2F;font-size:11px;">错误：${escapeHtml(log.error)}</div>`;
+    }
+
+    logHtml += `
+      <div style="margin-bottom:6px;padding-bottom:4px;border-bottom:1px dashed #eee;">
+        <div style="display:flex;align-items:center;gap:4px;">
+          <span style="color:${color};font-size:14px;">${icon}</span>
+          <span style="color:#333;font-weight:500;">${escapeHtml(log.message)}</span>
+          ${log.source ? `<span style="background:#f0f0f0;color:#666;padding:1px 5px;border-radius:3px;font-size:10px;margin-left:auto;">${escapeHtml(log.source)}</span>` : ''}
+        </div>
+        ${detail}
+      </div>
+    `;
+  });
+
+  // 最终数据源说明
+  logHtml += `
+    <div style="margin-top:8px;padding-top:6px;border-top:1px solid #ddd;text-align:center;color:#888;">
+      最终评估数据源：${escapeHtml(finalSource || '未知')}
+    </div>
+  `;
+
+  logHtml += '</div>';
+
+  const panel = document.createElement('div');
+  panel.className = 'fade-in';
+  panel.style.cssText = 'background:#FAFAFA; margin:8px 16px; padding:12px 14px; border-radius:10px; border:1px solid #E0E0E0;';
+  panel.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';this.querySelector('.toggle-icon').textContent=this.nextElementSibling.style.display==='none'?'▶':'▼';">
+      <span style="font-size:13px;font-weight:600;color:#555;">🔍 搜索流程详情</span>
+      <span class="toggle-icon" style="font-size:12px;color:#999;">▼</span>
+    </div>
+    <div style="margin-top:8px;">
+      ${logHtml}
+    </div>
+  `;
+
+  checkContent.insertBefore(panel, checkContent.firstChild);
+}
+
+function getStepIcon(status) {
+  const icons = {
+    'running': '⏳',
+    'success': '✅',
+    'error': '❌',
+    'skipped': '⏭️',
+    'no_results': '⚠️',
+    'no_data': '📭',
+    'used': '📋',
+    'info': 'ℹ️'
+  };
+  return icons[status] || '•';
+}
+
+function getStepColor(status) {
+  const colors = {
+    'running': '#1565C0',
+    'success': '#2E7D32',
+    'error': '#D32F2F',
+    'skipped': '#999',
+    'no_results': '#FF9800',
+    'no_data': '#FF9800',
+    'used': '#7B1FA2',
+    'info': '#555'
+  };
+  return colors[status] || '#999';
+}
+
+function escapeHtml(text) {
+  if (!text) return '';
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }
 
 function showAutoHint(message, color) {
