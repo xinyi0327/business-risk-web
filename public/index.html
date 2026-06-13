@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>商业合作风险评估系统</title>
+<style>
+:root {
+  --primary: #1A237E;
+  --primary-light: #3949AB;
+  --success: #07C160;
+  --warning: #FF9800;
+  --danger: #D32F2F;
+  --bg: #F5F5F5;
+  --card-bg: #FFFFFF;
+  --text: #212121;
+  --text-secondary: #757575;
+  --text-hint: #BDBDBD;
+  --border: #E0E0E0;
+  --radius: 12px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ===== 首页 ===== */
+.page { display: none; }
+.page.active { display: block; }
+
+.header {
+  background: linear-gradient(135deg, #1A237E 0%, #3949AB 100%);
+  padding: 40px 24px 32px;
+  text-align: center;
+  border-radius: 0 0 32px 32px;
+  color: #fff;
+}
+.header-icon { font-size: 56px; margin-bottom: 12px; }
+.header-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+.header-desc { font-size: 14px; opacity: 0.75; }
+
+.search-area {
+  margin: -24px 16px 0;
+  background: #fff;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(26,35,126,0.15);
+}
+.search-box {
+  display: flex;
+  align-items: center;
+  background: #F5F5F5;
+  border-radius: 32px;
+  padding: 12px 18px;
+  margin-bottom: 16px;
+}
+.search-icon { font-size: 20px; margin-right: 10px; }
+.search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 16px;
+  color: #212121;
+  outline: none;
+}
+.search-input::placeholder { color: #BDBDBD; }
+.search-clear {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: #BDBDBD;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  border: none;
+  flex-shrink: 0;
+}
+.btn {
+  border: none;
+  border-radius: 32px;
+  padding: 12px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary {
+  background: linear-gradient(135deg, #1A237E, #3949AB);
+  color: #fff;
+}
+.btn-primary:hover:not(:disabled) { opacity: 0.9; }
+.btn-outline {
+  background: transparent;
+  color: var(--primary);
+  border: 2px solid var(--primary);
+}
+
+.section { margin: 20px 16px; }
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #212121;
+}
+
+/* 维度卡片 */
+.dim-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 12px;
+}
+.dim-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.dim-card:hover { transform: translateY(-2px); }
+.dim-icon { font-size: 32px; margin-bottom: 6px; }
+.dim-name { font-size: 13px; font-weight: 600; color: #424242; }
+.dim-count { font-size: 11px; color: #9E9E9E; margin-top: 2px; }
+.dim-weight {
+  display: inline-block;
+  font-size: 11px;
+  color: #3949AB;
+  background: #E8EAF6;
+  padding: 2px 10px;
+  border-radius: 10px;
+  margin-top: 6px;
+}
+
+.note-bar {
+  margin: 24px 16px;
+  padding: 16px;
+  background: #FFF8E1;
+  border-radius: 12px;
+  font-size: 13px;
+  color: #F9A825;
+  line-height: 1.6;
+}
+
+/* ===== 评估页 ===== */
+.check-header {
+  background: linear-gradient(135deg, #1A237E, #3949AB);
+  padding: 20px 16px;
+  color: #fff;
+  border-radius: 0 0 20px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.check-label { font-size: 12px; opacity: 0.7; }
+.check-company { font-size: 22px; font-weight: 700; margin: 4px 0 12px; }
+.check-progress-text { font-size: 12px; opacity: 0.85; margin-bottom: 6px; }
+.progress-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.25);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: #fff;
+  transition: width 0.3s;
+}
+
+.tabs {
+  display: flex;
+  overflow-x: auto;
+  padding: 12px 16px;
+  background: #fff;
+  border-bottom: 1px solid #F0F0F0;
+  gap: 8px;
+  position: sticky;
+  top: 120px;
+  z-index: 5;
+}
+.tab, .tab-all {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
+  background: #F5F5F5;
+  color: #757575;
+  transition: all 0.2s;
+}
+.tab.active, .tab-all.active {
+  background: #E8EAF6;
+  color: #3949AB;
+  font-weight: 600;
+}
+
+.check-content { padding: 12px 16px 100px; }
+
+.risk-card {
+  background: #fff;
+  border-radius: 14px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+}
+.rc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  cursor: pointer;
+}
+.rc-header-left { display: flex; align-items: center; }
+.rc-icon { font-size: 28px; margin-right: 12px; }
+.rc-title { font-size: 15px; font-weight: 700; }
+.rc-sub { font-size: 11px; color: #9E9E9E; display: block; }
+.rc-toggle { font-size: 18px; color: #BDBDBD; }
+.rc-items { display: none; }
+.rc-items.open { display: block; }
+
+.rc-item {
+  display: flex;
+  align-items: center;
+  padding: 14px 16px;
+  border-top: 1px solid #F5F5F5;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.rc-item:active { background: #F5F5F5; }
+.rc-item.risk-active { background: #FFF5F5; }
+
+.checkbox {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  border: 2px solid #BDBDBD;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  font-size: 14px;
+  color: transparent;
+}
+.checkbox.checked {
+  background: #D32F2F;
+  border-color: #D32F2F;
+  color: #fff;
+}
+
+.item-text { flex: 1; font-size: 14px; color: #424242; line-height: 1.5; }
+.item-weight {
+  font-size: 11px;
+  color: #9E9E9E;
+  background: #F5F5F5;
+  padding: 2px 10px;
+  border-radius: 8px;
+  margin-left: 10px;
+  flex-shrink: 0;
+}
+.item-weight.high { background: #FFF3E0; color: #FF9800; }
+.item-weight.critical { background: #FFEBEE; color: #D32F2F; }
+
+.bottom-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: #fff;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+  z-index: 100;
+}
+.bottom-bar .btn { width: auto; padding: 12px 32px; }
+.bottom-info { display: flex; align-items: baseline; }
+.bottom-label { font-size: 12px; color: #9E9E9E; margin-right: 8px; }
+.bottom-score { font-size: 28px; font-weight: 700; color: #D32F2F; }
+.bottom-div { font-size: 22px; color: #E0E0E0; margin: 0 4px; }
+.bottom-total { font-size: 22px; color: #9E9E9E; }
+
+/* ===== 结果页 ===== */
+.result-header {
+  background: linear-gradient(135deg, #D32F2F, #FF5722);
+  padding: 36px 24px;
+  text-align: center;
+  color: #fff;
+  border-radius: 0 0 32px 32px;
+}
+.result-header.low { background: linear-gradient(135deg, #07C160, #4CAF50); }
+.result-header.medium { background: linear-gradient(135deg, #FF9800, #FFB74D); }
+.result-header.high { background: linear-gradient(135deg, #FF5722, #FF7043); }
+.result-header.critical { background: linear-gradient(135deg, #D32F2F, #F44336); }
+
+.result-company { font-size: 14px; opacity: 0.85; margin-bottom: 8px; }
+.score-ring {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  border: 4px solid rgba(255,255,255,0.4);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  background: rgba(255,255,255,0.15);
+}
+.score-num { font-size: 42px; font-weight: 800; line-height: 1; }
+.score-unit { font-size: 14px; opacity: 0.7; margin-top: 2px; }
+.result-tag {
+  display: inline-block;
+  padding: 6px 20px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  background: rgba(255,255,255,0.25);
+  margin-bottom: 6px;
+}
+.result-level { font-size: 24px; font-weight: 700; display: block; }
+
+.overview-row {
+  display: flex;
+  justify-content: space-around;
+  background: #fff;
+  margin: -16px 16px 16px;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.1);
+}
+.ov-item { text-align: center; }
+.ov-num { font-size: 28px; font-weight: 700; }
+.ov-num.risk { color: #D32F2F; }
+.ov-num.safe { color: #07C160; }
+.ov-label { font-size: 12px; color: #9E9E9E; margin-top: 4px; }
+
+.dim-score-item {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+}
+.dsi-header { display: flex; align-items: center; margin-bottom: 10px; }
+.dsi-icon { font-size: 22px; margin-right: 10px; }
+.dsi-name { font-size: 14px; font-weight: 600; flex: 1; }
+.dsi-badge {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+.badge-risk { background: #FFEBEE; color: #D32F2F; }
+.badge-warn { background: #FFF3E0; color: #FF9800; }
+.badge-safe { background: #E8F5E9; color: #07C160; }
+.dsi-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dsi-bar .progress-bar { flex: 1; background: #E0E0E0; }
+.dsi-bar .progress-fill { border-radius: 4px; }
+.dsi-score { font-size: 12px; color: #9E9E9E; white-space: nowrap; }
+
+.advice-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  border-left: 4px solid var(--warning);
+  line-height: 1.8;
+  font-size: 14px;
+  color: #616161;
+}
+.advice-card.low { border-color: #07C160; }
+.advice-card.medium { border-color: #FF9800; }
+.advice-card.high { border-color: #FF5722; }
+.advice-card.critical { border-color: #D32F2F; }
+
+.critical-risks { margin-top: 16px; }
+.critical-item {
+  display: flex;
+  align-items: flex-start;
+  background: #fff;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+}
+.cr-badge {
+  font-size: 11px;
+  background: #FFEBEE;
+  color: #D32F2F;
+  padding: 2px 10px;
+  border-radius: 8px;
+  margin-right: 12px;
+  flex-shrink: 0;
+  font-weight: 600;
+}
+.cr-text { font-size: 14px; color: #424242; }
+.result-actions { display: flex; gap: 12px; padding: 20px 16px 40px; }
+.result-actions .btn { flex: 1; }
+
+.fade-in { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* 响应式 - 桌面端 */
+@media (min-width: 768px) {
+  .search-area, .section, .note-bar { max-width: 600px; margin-left: auto; margin-right: auto; }
+  .check-content { max-width: 800px; margin: 0 auto; }
+  .dim-grid { grid-template-columns: repeat(3, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- ========== 首页 ========== -->
+<div id="page-home" class="page active">
+  <div class="header">
+    <div class="header-icon">🛡️</div>
+    <div class="header-title">商业合作风险评估</div>
+    <div class="header-desc">输入企业名称，自动核查企业风险信息<br>通过互联网公开数据比对，得出合作风险结论</div>
+  </div>
+
+  <div class="search-area">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" id="searchInput" placeholder="请输入企业全称" autocomplete="off">
+      <button class="search-clear" id="searchClear" style="display:none" onclick="clearSearch()">✕</button>
+    </div>
+    <button class="btn btn-primary" id="searchBtn" disabled onclick="startAssessment()">开始风险评估</button>
+  </div>
+
+  <div class="section">
+    <div class="section-title">风险评估六大维度</div>
+    <div class="dim-grid" id="dimGrid"></div>
+  </div>
+
+  <div class="note-bar">
+    💡 <strong>工作原理：</strong>输入企业名称后，系统将通过搜索引擎自动核查该企业的工商登记、司法诉讼、行政处罚、网络舆情等公开信息，与35项风险指标逐一比对，生成风险评估报告。<br><br>
+    ⚠️ <strong>免责声明：</strong>本工具结果仅供参考，不构成法律意见。重要决策请咨询专业律师。
+  </div>
+</div>
+
+<!-- ========== 评估页 ========== -->
+<div id="page-check" class="page">
+  <div class="check-header">
+    <div class="check-label">评估对象</div>
+    <div class="check-company" id="checkCompany"></div>
+    <div class="check-progress-text" id="progressText">已检查 0 / 35 项</div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabBar">
+    <button class="tab-all active" onclick="switchTab('all')">📋 全部</button>
+  </div>
+
+  <div class="check-content" id="checkContent"></div>
+
+  <div class="bottom-bar">
+    <div class="bottom-info">
+      <span class="bottom-label">风险项</span>
+      <span class="bottom-score" id="bottomScore">0</span>
+      <span class="bottom-div">/</span>
+      <span class="bottom-total">35</span>
+    </div>
+    <button class="btn btn-primary" onclick="showResult()">查看评估结果</button>
+  </div>
+</div>
+
+<!-- ========== 结果页 ========== -->
+<div id="page-result" class="page">
+  <div class="result-header" id="resultHeader">
+    <div class="result-company" id="resultCompany"></div>
+    <div class="score-ring">
+      <span class="score-num" id="scoreNum">0</span>
+      <span class="score-unit">分</span>
+    </div>
+    <span class="result-tag" id="resultTag"></span>
+    <span class="result-level" id="resultLevel"></span>
+  </div>
+
+  <div class="section">
+    <div class="overview-row">
+      <div class="ov-item"><div class="ov-num risk" id="ovRisk">0</div><div class="ov-label">风险项</div></div>
+      <div class="ov-item"><div class="ov-num safe" id="ovSafe">0</div><div class="ov-label">安全项</div></div>
+      <div class="ov-item"><div class="ov-num" id="ovTotal">35</div><div class="ov-label">总检查项</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">各维度风险评估</div>
+    <div id="dimScores"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">合作建议</div>
+    <div class="advice-card" id="adviceCard"></div>
+  </div>
+
+  <div class="section" id="criticalSection" style="display:none">
+    <div class="section-title" style="color:#D32F2F;">⚠️ 需重点关注</div>
+    <div class="critical-risks" id="criticalList"></div>
+  </div>
+
+  <div class="result-actions">
+    <button class="btn btn-outline" onclick="goBack()">重新评估</button>
+    <button class="btn btn-primary" onclick="window.print()">打印/导出报告</button>
+  </div>
+</div>
+
+<script>
+// ============ 风险清单模型 ============
+const RISK_DIMENSIONS = {
+  businessQualification: {
+    name: '主体资质风险', icon: '📋', weight: 20, short: '主体资质',
+    items: [
+      {id:'q1',text:'营业执照是否在有效期内',weight:3},
+      {id:'q2',text:'工商登记状态是否正常（非注销/吊销）',weight:5},
+      {id:'q3',text:'注册资本是否实缴到位',weight:3},
+      {id:'q4',text:'是否存在经营异常名录记录',weight:3},
+      {id:'q5',text:'是否被列入严重违法失信企业名单',weight:5},
+      {id:'q6',text:'法定代表人是否被限制高消费',weight:4},
+      {id:'q7',text:'经营范围是否包含合作业务所需资质',weight:2}
+    ]
+  },
+  judicialRisk: {
+    name: '司法风险', icon: '⚖️', weight: 25, short: '司法风险',
+    items: [
+      {id:'j1',text:'是否存在作为被告的未决诉讼',weight:5},
+      {id:'j2',text:'近3年涉诉案件数量是否过高(≥10件)',weight:4},
+      {id:'j3',text:'是否存在被执行信息（执行中）',weight:5},
+      {id:'j4',text:'是否被列为失信被执行人',weight:6},
+      {id:'j5',text:'是否存在股权冻结记录',weight:4},
+      {id:'j6',text:'是否存在破产重整/清算记录',weight:5},
+      {id:'j7',text:'是否存在劳动争议纠纷（批量）',weight:3}
+    ]
+  },
+  complianceRisk: {
+    name: '经营合规风险', icon: '⚠️', weight: 20, short: '经营合规',
+    items: [
+      {id:'c1',text:'是否存在行政处罚记录',weight:4},
+      {id:'c2',text:'是否存在税务异常/欠税公告',weight:5},
+      {id:'c3',text:'是否存在环保处罚记录',weight:3},
+      {id:'c4',text:'是否存在劳动保障处罚',weight:3},
+      {id:'c5',text:'是否通过行业必要资质认证',weight:3},
+      {id:'c6',text:'是否存在进出口违规记录',weight:2}
+    ]
+  },
+  reputationRisk: {
+    name: '舆情与声誉风险', icon: '📰', weight: 15, short: '舆情声誉',
+    items: [
+      {id:'r1',text:'是否存在重大负面新闻报道',weight:4},
+      {id:'r2',text:'是否存在产品质量/安全问题投诉',weight:4},
+      {id:'r3',text:'是否存在消费者集体维权事件',weight:3},
+      {id:'r4',text:'社交媒体是否存在持续负面舆情',weight:2},
+      {id:'r5',text:'企业及高管是否存在刑事涉案舆情',weight:4}
+    ]
+  },
+  financialRisk: {
+    name: '财务状况风险', icon: '💰', weight: 10, short: '财务状况',
+    items: [
+      {id:'f1',text:'是否存在大额对外担保',weight:3},
+      {id:'f2',text:'是否存在资产抵押/质押情况',weight:2},
+      {id:'f3',text:'是否存在拖欠货款/工程款纠纷',weight:3},
+      {id:'f4',text:'是否涉及重大资产转让/重组',weight:3}
+    ]
+  },
+  ipRisk: {
+    name: '知识产权风险', icon: '©️', weight: 10, short: '知识产权',
+    items: [
+      {id:'i1',text:'是否存在商标侵权纠纷',weight:3},
+      {id:'i2',text:'是否存在专利侵权纠纷',weight:3},
+      {id:'i3',text:'是否存在著作权纠纷',weight:2},
+      {id:'i4',text:'核心商标/专利是否有效存续',weight:3}
+    ]
+  }
+};
+
+const RISK_LEVELS = [
+  { name:'低风险', tag:'可合作',     color:'#07C160', min:0,  max:30, advice:'无明显风险因素，建议推进合作。建议签订标准合作协议，明确双方权利义务即可。' },
+  { name:'中等风险', tag:'谨慎合作', color:'#FF9800', min:31, max:55, advice:'存在一定风险因素，建议在签订合同时增加相应保护条款（如违约责任、担保条款），并对重点关注事项进行进一步核查。' },
+  { name:'高风险',  tag:'建议暂缓',  color:'#FF5722', min:56, max:75, advice:'存在较多风险因素，建议暂缓合作。如确需合作，应要求对方提供担保或第三方保证，并在合同中设置严格违约条款及退出机制。' },
+  { name:'极高风险', tag:'不建议合作', color:'#D32F2F', min:76, max:100, advice:'存在严重风险因素，强烈建议不予合作。可能存在法律纠纷、失信被执行、经营异常等重大问题，合作可能导致连带责任或经济损失。' }
+];
+
+// ============ 全局状态 ============
+let checkedItems = {};
+let companyName = '';
+let activeTab = 'all';
+
+// ============ 初始化首页 ============
+function initHome() {
+  const grid = document.getElementById('dimGrid');
+  Object.entries(RISK_DIMENSIONS).forEach(([key, dim]) => {
+    grid.innerHTML += `
+      <div class="dim-card fade-in">
+        <div class="dim-icon">${dim.icon}</div>
+        <div class="dim-name">${dim.name}</div>
+        <div class="dim-count">${dim.items.length}项指标</div>
+        <div class="dim-weight">权重 ${dim.weight}%</div>
+      </div>`;
+  });
+}
+
+// ============ 搜索逻辑 ============
+const searchInput = document.getElementById('searchInput');
+const searchBtn = document.getElementById('searchBtn');
+const searchClear = document.getElementById('searchClear');
+
+searchInput.addEventListener('input', () => {
+  const v = searchInput.value.trim();
+  searchClear.style.display = v ? 'flex' : 'none';
+  searchBtn.disabled = !v;
+});
+
+function clearSearch() {
+  searchInput.value = '';
+  searchClear.style.display = 'none';
+  searchBtn.disabled = true;
+  searchInput.focus();
+}
+
+async function startAssessment() {
+  companyName = searchInput.value.trim();
+  if (!companyName) return;
+  switchPage('check');
+  initCheckPage();
+  // 触发后端自动抓取
+  await performAutoAssessment(companyName);
+}
+
+// ============ 评估页 ============
+function initCheckPage() {
+  checkedItems = {};
+  document.getElementById('checkCompany').textContent = companyName;
+  updateProgress();
+  buildTabs();
+  renderCheckItems();
+}
+
+function buildTabs() {
+  const tabBar = document.getElementById('tabBar');
+  let html = '<button class="tab-all active" onclick="switchTab(\'all\')">📋 全部</button>';
+  Object.entries(RISK_DIMENSIONS).forEach(([key, dim]) => {
+    html += `<button class="tab" id="tab-${key}" onclick="switchTab('${key}')">${dim.icon} ${dim.short}</button>`;
+  });
+  tabBar.innerHTML = html;
+}
+
+function switchTab(key) {
+  activeTab = key;
+  document.querySelectorAll('.tab, .tab-all').forEach(b => b.classList.remove('active'));
+  if (key === 'all') {
+    document.querySelector('.tab-all').classList.add('active');
+  } else {
+    document.getElementById('tab-' + key).classList.add('active');
+  }
+  renderCheckItems();
+}
+
+function renderCheckItems() {
+  const container = document.getElementById('checkContent');
+  let html = '';
+
+  Object.entries(RISK_DIMENSIONS).forEach(([dimKey, dim]) => {
+    if (activeTab !== 'all' && activeTab !== dimKey) return;
+
+    const checkedCount = dim.items.filter(i => checkedItems[i.id]).length;
+    const allExpanded = activeTab === dimKey || activeTab === 'all';
+
+    html += `<div class="risk-card fade-in">`;
+    html += `<div class="rc-header" onclick="toggleCard(this)">
+      <div class="rc-header-left">
+        <span class="rc-icon">${dim.icon}</span>
+        <div>
+          <span class="rc-title">${dim.name}</span>
+          <span class="rc-sub">权重 ${dim.weight}% · ${checkedCount}/${dim.items.length} 项</span>
+        </div>
+      </div>
+      <span class="rc-toggle">▾</span>
+    </div>`;
+
+    html += `<div class="rc-items ${allExpanded ? 'open' : ''}">`;
+    dim.items.forEach(item => {
+      const checked = !!checkedItems[item.id];
+      const wClass = item.weight >= 5 ? 'critical' : item.weight >= 4 ? 'high' : '';
+      html += `<div class="rc-item ${checked ? 'risk-active' : ''}" onclick="toggleItem('${item.id}')">
+        <span class="checkbox ${checked ? 'checked' : ''}">${checked ? '✓' : ''}</span>
+        <span class="item-text">${item.text}</span>
+        <span class="item-weight ${wClass}">权重${item.weight}</span>
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+function toggleCard(header) {
+  const items = header.nextElementSibling;
+  const icon = header.querySelector('.rc-toggle');
+  items.classList.toggle('open');
+  icon.textContent = items.classList.contains('open') ? '▾' : '▸';
+}
+
+function toggleItem(itemId) {
+  checkedItems[itemId] = !checkedItems[itemId];
+  updateProgress();
+  renderCheckItems();
+}
+
+function updateProgress() {
+  const checkedCount = Object.values(checkedItems).filter(Boolean).length;
+  const pct = Math.round((checkedCount / 35) * 100);
+  document.getElementById('progressText').textContent = `已检查 ${checkedCount} / 35 项`;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('bottomScore').textContent = checkedCount;
+}
+
+// ============ 自动评估（调用后端API）============
+async function performAutoAssessment(name) {
+  const checkContent = document.getElementById('checkContent');
+
+  // 显示加载状态
+  const loadingDiv = document.createElement('div');
+  loadingDiv.id = 'autoLoading';
+  loadingDiv.style.cssText = 'background:#E3F2FD; margin:8px 16px; padding:16px; border-radius:10px; font-size:13px; color:#1565C0; text-align:center;';
+  loadingDiv.innerHTML = '<div style="display:inline-block;width:16px;height:16px;border:2px solid #1565C0;border-top:2px solid transparent;border-radius:50%;animation:spin 1s linear infinite;margin-right:8px;vertical-align:middle;"></div>正在自动抓取公开信息，请稍候...';
+  loadingDiv.className = 'fade-in';
+  checkContent.insertBefore(loadingDiv, checkContent.firstChild);
+
+  try {
+    const response = await fetch('/api/assess', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ companyName: name })
+    });
+
+    const data = await response.json();
+
+    // 移除加载状态
+    const existing = document.getElementById('autoLoading');
+    if (existing) existing.remove();
+
+    if (!data.success) {
+      showAutoHint('⚠️ 自动抓取失败：' + (data.error || '未知错误') + '，请手动勾选风险项。', '#D32F2F');
+      return;
+    }
+
+    // 自动填充检查结果
+    checkedItems = data.checkedItems || {};
+    updateProgress();
+    renderCheckItems();
+
+    // 显示自动抓取结果提示
+    const riskCount = data.checkedCount || 0;
+    const hintColor = riskCount > 5 ? '#D32F2F' : riskCount > 2 ? '#FF9800' : '#2E7D32';
+    const hintMsg = riskCount > 0
+      ? `✅ 自动抓取完成，发现 ${riskCount} 项风险指标已自动勾选。您可以在此基础上手动调整，然后查看评估结果。`
+      : `✅ 自动抓取完成，未发现明显风险指标。您可以手动补充检查后查看结果。`;
+    showAutoHint(hintMsg, hintColor);
+
+    // 如果有风险项，自动滚动到第一个风险项
+    if (riskCount > 0) {
+      setTimeout(() => {
+        const firstRisk = document.querySelector('.rc-item.risk-active');
+        if (firstRisk) firstRisk.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
+    }
+
+  } catch (err) {
+    console.error('自动评估出错:', err);
+    const existing = document.getElementById('autoLoading');
+    if (existing) existing.remove();
+    showAutoHint('⚠️ 网络请求失败，请手动勾选风险项。', '#D32F2F');
+  }
+}
+
+function showAutoHint(message, color) {
+  const hint = document.createElement('div');
+  hint.style.cssText = `background:${color}15; margin:8px 16px; padding:12px 16px; border-radius:10px; font-size:13px; color:${color}; border-left:3px solid ${color};`;
+  hint.innerHTML = message;
+  hint.className = 'fade-in';
+  const checkContent = document.getElementById('checkContent');
+  checkContent.insertBefore(hint, checkContent.firstChild);
+}
+
+// ============ 计算评分 ============
+function calculateScore() {
+  let totalScore = 0;
+  const dimScores = {};
+  const riskItems = [];
+
+  Object.entries(RISK_DIMENSIONS).forEach(([key, dim]) => {
+    let dimScore = 0;
+    let dimMax = 0;
+    dim.items.forEach(item => {
+      dimMax += item.weight;
+      if (checkedItems[item.id]) {
+        dimScore += item.weight;
+        riskItems.push({...item, dimension: dim.name, dimKey: key});
+      }
+    });
+    const normalized = dimMax > 0 ? (dimScore / dimMax) * dim.weight : 0;
+    dimScores[key] = {
+      name: dim.name, icon: dim.icon,
+      score: Math.round(normalized * 10) / 10,
+      maxScore: dim.weight,
+      riskCount: dim.items.filter(i => checkedItems[i.id]).length,
+      totalCount: dim.items.length
+    };
+    totalScore += normalized;
+  });
+
+  totalScore = Math.round(totalScore);
+  const level = RISK_LEVELS.find(l => totalScore >= l.min && totalScore <= l.max) || RISK_LEVELS[3];
+  const criticalRisks = riskItems.filter(i => i.weight >= 5);
+
+  return { totalScore, level, dimScores, riskItems, criticalRisks };
+}
+
+function getLevelClass(totalScore) {
+  if (totalScore <= 30) return 'low';
+  if (totalScore <= 55) return 'medium';
+  if (totalScore <= 75) return 'high';
+  return 'critical';
+}
+
+// ============ 结果页 ============
+function showResult() {
+  const result = calculateScore();
+  const checkedCount = Object.values(checkedItems).filter(Boolean).length;
+  const levelClass = getLevelClass(result.totalScore);
+
+  // 设置头部
+  document.getElementById('resultCompany').textContent = companyName;
+  document.getElementById('scoreNum').textContent = result.totalScore;
+  document.getElementById('resultTag').textContent = result.level.tag;
+  document.getElementById('resultLevel').textContent = result.level.name;
+
+  const header = document.getElementById('resultHeader');
+  header.className = 'result-header ' + levelClass;
+
+  // 概览
+  document.getElementById('ovRisk').textContent = checkedCount;
+  document.getElementById('ovSafe').textContent = 35 - checkedCount;
+
+  // 各维度得分
+  let dimHtml = '';
+  Object.values(result.dimScores).forEach(d => {
+    const pct = (d.score / d.maxScore * 100).toFixed(0);
+    const barColor = d.riskCount > 3 ? '#D32F2F' : d.riskCount > 1 ? '#FF9800' : '#07C160';
+    const badgeClass = d.riskCount > 3 ? 'badge-risk' : d.riskCount > 0 ? 'badge-warn' : 'badge-safe';
+    const badgeText = d.riskCount > 0 ? `${d.riskCount}项风险` : '无风险';
+    dimHtml += `
+      <div class="dim-score-item fade-in">
+        <div class="dsi-header">
+          <span class="dsi-icon">${d.icon}</span>
+          <span class="dsi-name">${d.name}</span>
+          <span class="dsi-badge ${badgeClass}">${badgeText}</span>
+        </div>
+        <div class="dsi-bar">
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${barColor}"></div></div>
+          <span class="dsi-score">${d.score}/${d.maxScore}</span>
+        </div>
+      </div>`;
+  });
+  document.getElementById('dimScores').innerHTML = dimHtml;
+
+  // 建议
+  const adviceCard = document.getElementById('adviceCard');
+  adviceCard.textContent = result.level.advice;
+  adviceCard.className = 'advice-card ' + (levelClass === 'low' ? 'low' : levelClass === 'medium' ? 'medium' : levelClass === 'high' ? 'high' : 'critical');
+
+  // 重点关注
+  if (result.criticalRisks.length > 0) {
+    document.getElementById('criticalSection').style.display = 'block';
+    let crHtml = '';
+    result.criticalRisks.forEach(r => {
+      crHtml += `<div class="critical-item fade-in">
+        <span class="cr-badge">权重${r.weight}</span>
+        <span class="cr-text">${r.text}</span>
+      </div>`;
+    });
+    document.getElementById('criticalList').innerHTML = crHtml;
+  } else {
+    document.getElementById('criticalSection').style.display = 'none';
+  }
+
+  switchPage('result');
+  window.scrollTo(0, 0);
+}
+
+// ============ 页面切换 ============
+function switchPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function goBack() {
+  switchPage('check');
+  renderCheckItems();
+}
+
+// ============ 键盘快捷键 ============
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && document.getElementById('page-home').classList.contains('active')) {
+    if (!searchBtn.disabled) startAssessment();
+  }
+});
+
+// ============ 启动 ============
+initHome();
+</script>
+</body>
+</html>
