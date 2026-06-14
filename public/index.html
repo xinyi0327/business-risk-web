@@ -770,10 +770,19 @@ async function performAutoAssessment(name) {
 
     // 显示自动抓取结果提示
     const riskCount = data.checkedCount || 0;
-    const hintColor = riskCount > 5 ? '#D32F2F' : riskCount > 2 ? '#FF9800' : '#2E7D32';
-    const hintMsg = riskCount > 0
-      ? `✅ 自动抓取完成，发现 ${riskCount} 项风险指标已自动勾选。您可以在此基础上手动调整，然后查看评估结果。`
-      : `✅ 自动抓取完成，未发现明显风险指标。您可以手动补充检查后查看结果。`;
+    const isNoData = data.dataSource && data.dataSource.includes('无数据');
+
+    let hintColor, hintMsg;
+    if (isNoData) {
+      hintColor = '#FF9800';
+      hintMsg = `⚠️ API 未返回数据：企查查和启信宝均未找到「${companyName}」的信息。请确认企业名称是否正确，或手动勾选风险项。`;
+    } else if (riskCount > 0) {
+      hintColor = riskCount > 5 ? '#D32F2F' : riskCount > 2 ? '#FF9800' : '#2E7D32';
+      hintMsg = `✅ 自动抓取完成（${data.dataSource}），发现 ${riskCount} 项风险指标已自动勾选。您可以在此基础上手动调整，然后查看评估结果。`;
+    } else {
+      hintColor = '#2E7D32';
+      hintMsg = `✅ 自动抓取完成（${data.dataSource}），未发现明显风险指标。您可以手动补充检查后查看结果。`;
+    }
     showAutoHint(hintMsg, hintColor);
 
     // 如果有风险项，自动滚动到第一个风险项
